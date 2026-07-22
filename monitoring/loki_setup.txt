@@ -1,0 +1,66 @@
+# Grafana Loki Setup Instructions
+
+## Starting Loki Locally
+
+### Method 1: Using Docker (Recommended)
+
+1. Pull the Loki image:
+```bash
+docker pull grafana/loki:latest
+```
+
+2. Start Loki:
+```bash
+docker run -d --name loki -p 3100:3100 grafana/loki:latest
+```
+
+3. Verify Loki is running:
+```bash
+curl http://localhost:3100/ready
+```
+
+### Method 2: Using Binary
+
+1. Download Loki from https://github.com/grafana/loki/releases
+
+2. Run Loki with default config:
+```bash
+./loki -config.file=loki-config.yml
+```
+
+## Viewing Logs
+
+### Query Logs via API
+```bash
+curl -G http://localhost:3100/loki/api/v1/query_range \
+  --data-urlencode 'query={job="hello-devops"}'
+```
+
+### Using LogCLI
+```bash
+# Install LogCLI
+go install github.com/grafana/loki/cmd/logcli@latest
+
+# Query logs
+logcli query '{job="hello-devops"}'
+```
+
+## Configuration Notes
+
+- Default port: 3100
+- Data retention: 7 days (default)
+- Storage path: /loki (default)
+
+## Integration with Docker
+
+To forward container logs to Loki:
+
+1. Install the Loki Docker driver:
+```bash
+docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+```
+
+2. Run containers with Loki logging:
+```bash
+docker run --log-driver=loki hello-devops
+```
